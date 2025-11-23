@@ -7,7 +7,7 @@ import { KNOWLEDGE_BASE, KnowledgeChunk } from '../knowledge';
 import { ChatMessage } from '../types';
 
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-const MODEL_ID = "alibaba/tongyi-deepresearch-30b-a3b:free";
+const MODEL_ID = "x-ai/grok-4.1-fast";
 
 /**
  * SIMULATED VECTOR SEARCH SYSTEM
@@ -34,12 +34,12 @@ const calculateRelevanceScore = (queryTokens: string[], chunk: KnowledgeChunk): 
     // These act as the "Semantic Embedding"
     chunk.vector_sim.forEach(keyword => {
         if (queryTokens.includes(keyword.toLowerCase())) {
-            score += 15; // High relevance hit
+            score += 20; // High relevance hit
         }
         // Partial match support
         queryTokens.forEach(qt => {
             if (keyword.includes(qt) || qt.includes(keyword)) {
-                score += 5;
+                score += 8;
             }
         });
     });
@@ -47,7 +47,7 @@ const calculateRelevanceScore = (queryTokens: string[], chunk: KnowledgeChunk): 
     // Check Title (Medium Weight)
     const titleTokens = tokenize(chunk.title);
     titleTokens.forEach(tt => {
-        if (queryTokens.includes(tt)) score += 10;
+        if (queryTokens.includes(tt)) score += 12;
     });
 
     // Check Content (Low Weight but high volume)
@@ -57,7 +57,7 @@ const calculateRelevanceScore = (queryTokens: string[], chunk: KnowledgeChunk): 
         if (queryTokens.includes(ct)) contentMatches++;
     });
     // Logarithmic scaling for content to prevent long articles from dominating purely by length
-    score += Math.log(contentMatches + 1) * 2;
+    score += Math.log(contentMatches + 1) * 3;
 
     return score;
 };
@@ -78,7 +78,7 @@ const performNeuralSearch = (query: string): KnowledgeChunk[] => {
 
     // Step B: Spread Activation (The "Connections" Logic)
     // If a node is highly active, it excites its neighbors
-    const SPREAD_FACTOR = 0.4; // Neighbors get 40% of the parent's heat
+    const SPREAD_FACTOR = 0.5; // Neighbors get 50% of the parent's heat
 
     // Create a snapshot of keys to iterate to avoid infinite loops during updates
     const initialKeys = Array.from(activationMap.keys());
@@ -100,10 +100,10 @@ const performNeuralSearch = (query: string): KnowledgeChunk[] => {
     // Step C: Sort & Filter
     const sortedResults = Array.from(activationMap.entries())
         .sort((a, b) => b[1] - a[1]) // Sort by score descending
-        .filter(entry => entry[1] > 5); // threshold
+        .filter(entry => entry[1] > 0.5); // Very low threshold to ensure data flow
 
-    // Return top chunks
-    return sortedResults.slice(0, 5).map(entry => {
+    // Return top chunks (Expanded window)
+    return sortedResults.slice(0, 10).map(entry => {
         return KNOWLEDGE_BASE.find(k => k.id === entry[0])!;
     });
 };
@@ -145,12 +145,12 @@ CONNECTED_CONCEPTS: ${relations}
     ${contextString || "NO ARCHIVE MATCHES. RELY ON GENERAL TRAINING."}
     
     DIRECTIVES:
-    1.  **Synthesize**: Do not just repeat the data. Look at the [CONNECTED_CONCEPTS] and explain *how* Node A relates to Node B if relevant.
-    2.  **Investigate**: If the data shows a chain (e.g. MK-677 -> GH -> Sleep), walk the user through that biological pathway.
-    3.  **Safety**: If discussing 'Compounds' or 'Peptides', YOU MUST APPEND: "Disclaimer: For laboratory research purposes only. Not for human consumption."
-    4.  **Tone**: Clinical, High-Tech, "Cyber-Medical".
-    5.  **Markdown**: Use proper markdown formatting for your text responses (headings, lists, bold, italic, etc.)
-    6.  **Auto-Correction**: If you receive an error message about a visualization syntax error, regenerate ONLY that visualization with corrected syntax. Do not repeat the entire previous response.
+    1.  **Use the Neural Data**: You MUST reference the provided [NEURAL_NODE_ID] data in your answer. The user expects you to use this specific knowledge base.
+    2.  **Synthesize**: Do not just repeat the data. Look at the [CONNECTED_CONCEPTS] and explain *how* Node A relates to Node B if relevant.
+    3.  **Investigate**: If the data shows a chain (e.g. MK-677 -> GH -> Sleep), walk the user through that biological pathway.
+    4.  **Safety**: If discussing 'Compounds' or 'Peptides', YOU MUST APPEND: "Disclaimer: For laboratory research purposes only. Not for human consumption."
+    5.  **Tone**: Clinical, High-Tech, "Cyber-Medical".
+    6.  **Markdown**: Use proper markdown formatting for your text responses (headings, lists, bold, italic, etc.)
     
     --- VISUALIZATION PROTOCOLS ---
     You can generate Rich Media responses. Use these specific formats when helpful:
@@ -211,31 +211,29 @@ CONNECTED_CONCEPTS: ${relations}
     }
     \`\`\`
 
-    [DIAGRAMS - MERMAID]
-    To display a flow or sequence diagram, output strictly valid MERMAID syntax inside a \`\`\`mermaid\`\`\` code block.
+    [DIAGRAMS - FLOW/SEQUENCE]
+    To display a flow diagram, output STRICTLY VALID JSON inside a \`\`\`json\`\`\` code block.
+    The JSON must have 'nodes' and 'edges' arrays.
     
-    Example FLOWCHART:
-    \`\`\`mermaid
-    graph TD
-        A[MK-677 Ingestion] --> B[Ghrelin Receptor Activation]
-        B --> C[Pituitary Stimulation]
-        C --> D[GH Release]
-        D --> E[Liver IGF-1 Production]
-        E --> F[Anabolic Effects]
+    Example FLOW DIAGRAM:
+    \`\`\`json
+    {
+      "nodes": [
+        { "id": "1", "label": "MK-677 Ingestion" },
+        { "id": "2", "label": "Ghrelin Receptor Activation" },
+        { "id": "3", "label": "Pituitary Stimulation" },
+        { "id": "4", "label": "GH Release" }
+      ],
+      "edges": [
+        { "source": "1", "target": "2", "label": "Ingest" },
+        { "source": "2", "target": "3", "label": "Activate" },
+        { "source": "3", "target": "4", "label": "Stimulate" }
+      ],
+      "direction": "TB"
+    }
     \`\`\`
     
-    Example SEQUENCE DIAGRAM:
-    \`\`\`mermaid
-    sequenceDiagram
-        participant User
-        participant Stomach
-        participant Pituitary
-        participant Liver
-        User->>Stomach: Takes MK-677
-        Stomach->>Pituitary: Ghrelin Signal
-        Pituitary->>Liver: GH Release
-        Liver->>User: IGF-1 Production
-    \`\`\`
+    DO NOT use Mermaid syntax. Use only this JSON format for diagrams.
 
     [IMAGES]
     To show an image, use Markdown image syntax: ![Alt Text](URL)

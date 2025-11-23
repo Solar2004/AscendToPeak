@@ -42,10 +42,23 @@ export enum LoadingState {
   SUCCESS = 'SUCCESS'
 }
 
-export type ViewState = 
+export type ViewState =
   | { type: 'home' }
   | { type: 'product', product: Product }
   | { type: 'journal', article: JournalArticle }
   | { type: 'checkout' }
   | { type: 'chatbot' }
   | { type: 'store' };
+
+export interface GraphNode {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+  category: string;
+}
+
+export interface GraphLink {
+  source: { x: number, y: number };
+  target: { x: number, y: number };
+}

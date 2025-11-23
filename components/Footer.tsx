@@ -26,7 +26,7 @@ const Footer: React.FC<FooterProps> = ({ onLinkClick }) => {
   return (
     <footer className="bg-[#050505] pt-24 pb-12 px-6 text-zinc-400 border-t border-zinc-900">
       <div className="max-w-[1800px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-12">
-        
+
         <div className="md:col-span-4">
           <h4 className="text-xl font-bold text-white mb-6 uppercase tracking-tighter">Ascend to Peak</h4>
           <p className="max-w-xs font-light leading-relaxed text-sm">
@@ -43,28 +43,28 @@ const Footer: React.FC<FooterProps> = ({ onLinkClick }) => {
             <li><a href="#products" onClick={(e) => onLinkClick(e, 'products')} className="hover:text-cyan-400 transition-colors">Software</a></li>
           </ul>
         </div>
-        
+
         <div className="md:col-span-2">
           <h4 className="font-bold text-white mb-6 tracking-widest text-xs uppercase">Community</h4>
           <ul className="space-y-4 font-light text-sm font-mono">
             <li><a href="#about" onClick={(e) => onLinkClick(e, 'about')} className="hover:text-cyan-400 transition-colors">Mission</a></li>
             <li><a href="#journal" onClick={(e) => onLinkClick(e, 'journal')} className="hover:text-cyan-400 transition-colors">Research Logs</a></li>
-            <li><a href="https://discord.com" target="_blank" rel="noreferrer" className="hover:text-cyan-400 transition-colors">Discord Server</a></li>
+            <li><a href="https://discord.gg/vPq93wguyf" target="_blank" rel="noreferrer" className="hover:text-cyan-400 transition-colors">Discord Server</a></li>
           </ul>
         </div>
 
         <div className="md:col-span-4">
           <h4 className="font-bold text-white mb-6 tracking-widest text-xs uppercase">Waitlist</h4>
           <div className="flex flex-col gap-4">
-            <input 
-              type="email" 
-              placeholder="Enter email for access..." 
+            <input
+              type="email"
+              placeholder="Enter email for access..."
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={subscribeStatus === 'loading' || subscribeStatus === 'success'}
-              className="bg-transparent border-b border-zinc-700 py-2 text-sm outline-none focus:border-cyan-500 transition-colors placeholder-zinc-700 text-white disabled:opacity-50 font-mono" 
+              className="bg-transparent border-b border-zinc-700 py-2 text-sm outline-none focus:border-cyan-500 transition-colors placeholder-zinc-700 text-white disabled:opacity-50 font-mono"
             />
-            <button 
+            <button
               onClick={handleSubscribe}
               disabled={subscribeStatus !== 'idle' || !email}
               className="self-start text-xs font-bold uppercase tracking-widest mt-2 hover:text-cyan-400 disabled:cursor-default disabled:hover:text-zinc-500 disabled:opacity-50 transition-opacity text-white"
